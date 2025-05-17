@@ -124,7 +124,7 @@ const ResourcesTab = ({
           }}
           setSelectedItem={(resource) => {
             setSelectedResource(resource);
-            readResource(resource.uri);
+            readResource(resource?.uri ?? "");
             setSelectedTemplate(null);
           }}
           renderItem={(resource) => (

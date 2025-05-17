@@ -44,6 +44,8 @@ const ToolsTab = ({
 }) => {
   const [params, setParams] = useState<Record<string, unknown>>({});
   const [isToolRunning, setIsToolRunning] = useState(false);
+  const [toolsEvaluationResult, setToolsEvaluationResult] =
+    useState<ToolsEvaluationProps>();
 
   useEffect(() => {
     const params = Object.entries(
@@ -136,16 +138,40 @@ const ToolsTab = ({
           }}
           setSelectedItem={setSelectedTool}
           renderItem={(tool) => (
-            <div className="flex flex-col items-start">
-              <span className="flex-1">{tool.name}</span>
-              <span className="text-sm text-gray-500 text-left">
-                {tool.description}
-              </span>
+            <div className="flex flex-row justify-between w-full gap-4">
+              <div className="flex flex-col items-start">
+                <span className="flex-1 line-clamp-1">{tool.name}</span>
+                <span className="text-sm text-gray-500 text-left">
+                  {tool.description}
+                </span>
+              </div>
+              <ToolChecksSummary tool={tool} />
             </div>
           )}
           title="Tools"
           buttonText={nextCursor ? "List More Tools" : "List Tools"}
           isButtonDisabled={!nextCursor && tools.length > 0}
+          additionalActions={[
+            {
+              id: "evaluate",
+              text: "Evaluate Tools",
+              onClick: async (items) => {
+                try {
+                  const data = await new Promise<string>((resolve) =>
+                    setTimeout(() => resolve(`${items.length} tools`), 2000),
+                  );
+                  setToolsEvaluationResult({ status: "success", result: data });
+                } catch (e) {
+                  setToolsEvaluationResult({ status: "error", error: e });
+                }
+              },
+            },
+          ]}
+          listPlaceholder={
+            toolsEvaluationResult && (
+              <ToolsEvaluation {...toolsEvaluationResult} />
+            )
+          }
         />
 
         <div className="bg-card rounded-lg shadow">

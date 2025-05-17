@@ -100,7 +100,7 @@ const PromptsTab = ({
           renderItem={(prompt) => (
             <>
               <span className="flex-1">{prompt.name}</span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {prompt.description}
               </span>
             </>
@@ -162,11 +162,9 @@ const PromptsTab = ({
                 )}
               </div>
             ) : (
-              <Alert>
-                <AlertDescription>
-                  Select a prompt from the list to view and use it
-                </AlertDescription>
-              </Alert>
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                Select a prompt from the list to view and use it.
+              </p>
             )}
           </div>
         </div>

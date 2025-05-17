@@ -97,7 +97,7 @@ const ToolsTab = ({
             {isError ? (
               <span className="text-red-600 font-semibold">Error</span>
             ) : (
-              <span className="text-green-600 font-semibold">Success</span>
+              <span className="text-[#00AD8A] font-semibold">Success</span>
             )}
           </h4>
           {structuredResult.content?.map((item, index) => (
@@ -154,7 +154,7 @@ const ToolsTab = ({
             <div className="flex flex-row justify-between w-full gap-4">
               <div className="flex flex-col items-start">
                 <span className="flex-1 line-clamp-1">{tool.name}</span>
-                <span className="text-sm text-gray-500 text-left">
+                <span className="text-sm text-gray-500 dark:text-gray-400 text-left">
                   {tool.description}
                 </span>
               </div>
@@ -170,7 +170,7 @@ const ToolsTab = ({
               text: (
                 <>
                   Evaluate Tools
-                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-blue-500 rounded-full">
+                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-[#00AD8A] rounded-full">
                     NEW
                   </span>
                 </>
@@ -421,11 +421,9 @@ const ToolsTab = ({
                 {toolResult && renderToolResult()}
               </div>
             ) : (
-              <Alert>
-                <AlertDescription>
-                  Select a tool from the list to view its details and run it
-                </AlertDescription>
-              </Alert>
+              <p className="text-sm text-gray-500 italic">
+                Select a tool from the list to view its details and run it.
+              </p>
             )}
           </div>
         </div>

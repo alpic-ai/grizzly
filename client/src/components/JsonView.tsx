@@ -76,7 +76,7 @@ const JsonView = memo(
             onClick={handleCopy}
           >
             {copied ? (
-              <CheckCheck className="size-4 dark:text-green-700 text-green-600" />
+              <CheckCheck className="size-4 dark:text-[#00AD8A] text-[#00AD8A]" />
             ) : (
               <Copy className="size-4 text-foreground" />
             )}
@@ -120,7 +120,7 @@ const JsonNode = memo(
       boolean: "text-amber-600",
       null: "text-purple-600",
       undefined: "text-gray-600",
-      string: "text-green-600 group-hover:text-green-500",
+      string: "text-[#00AD8A] group-hover:text-[#00AD8A]",
       error: "text-red-600 group-hover:text-red-500",
       default: "text-gray-700",
     });

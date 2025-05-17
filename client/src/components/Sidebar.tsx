@@ -14,6 +14,7 @@ import {
   RefreshCwOff,
   Copy,
   CheckCheck,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -320,16 +321,16 @@ const Sidebar = ({
                 <Button
                   variant="outline"
                   onClick={() => setShowBearerToken(!showBearerToken)}
-                  className="flex items-center w-full"
+                  className="flex items-center justify-between w-full"
                   data-testid="auth-button"
                   aria-expanded={showBearerToken}
                 >
+                  <span>Authentication</span>
                   {showBearerToken ? (
-                    <ChevronDown className="w-4 h-4 mr-2" />
+                    <ChevronDown className="w-4 h-4" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 mr-2" />
+                    <ChevronRight className="w-4 h-4" />
                   )}
-                  Authentication
                 </Button>
                 {showBearerToken && (
                   <div className="space-y-2">
@@ -534,17 +535,19 @@ const Sidebar = ({
             <Button
               variant="outline"
               onClick={() => setShowConfig(!showConfig)}
-              className="flex items-center w-full"
+              className="flex items-center justify-between w-full"
               data-testid="config-button"
               aria-expanded={showConfig}
             >
+              <div className="flex items-center">
+                <Settings className="w-4 h-4 mr-2" />
+                Configuration
+              </div>
               {showConfig ? (
-                <ChevronDown className="w-4 h-4 mr-2" />
+                <ChevronDown className="w-4 h-4" />
               ) : (
-                <ChevronRight className="w-4 h-4 mr-2" />
+                <ChevronRight className="w-4 h-4" />
               )}
-              <Settings className="w-4 h-4 mr-2" />
-              Configuration
             </Button>
             {showConfig && (
               <div className="space-y-2">
@@ -554,7 +557,7 @@ const Sidebar = ({
                     <div key={key} className="space-y-2">
                       <div className="flex items-center gap-1">
                         <label
-                          className="text-sm font-medium text-green-600 break-all"
+                          className="text-sm font-medium text-[#00AD8A] break-all"
                           htmlFor={`${configKey}-input`}
                         >
                           {configItem.label}
@@ -633,27 +636,29 @@ const Sidebar = ({
             <Button
               variant="outline"
               onClick={() => setShowModels((showModels) => !showModels)}
-              className="flex items-center w-full"
+              className="flex items-center justify-between w-full"
               data-testid="config-button"
               aria-expanded={showModels}
             >
+              <div className="flex items-center">
+                <Bot className="w-4 h-4 mr-2" />
+                Models
+                <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-[#00AD8A] rounded-full">
+                  NEW
+                </span>
+              </div>
               {showModels ? (
-                <ChevronDown className="w-4 h-4 mr-2" />
+                <ChevronDown className="w-4 h-4" />
               ) : (
-                <ChevronRight className="w-4 h-4 mr-2" />
+                <ChevronRight className="w-4 h-4" />
               )}
-              <Settings className="w-4 h-4 mr-2" />
-              Models
-              <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-blue-500 rounded-full">
-                NEW
-              </span>
             </Button>
             {showModels && (
               <div className="space-y-2">
                 <div className="space-y-2">
                   <div className="flex items-center gap-1">
                     <label
-                      className="text-sm font-medium text-green-600 break-all"
+                      className="text-sm font-medium text-[#00AD8A] break-all"
                       htmlFor="model-select-input"
                     >
                       Anthropic Model
@@ -688,7 +693,7 @@ const Sidebar = ({
                 <div className="space-y-2">
                   <div className="flex items-center gap-1">
                     <label
-                      className="text-sm font-medium text-green-600 break-all"
+                      className="text-sm font-medium text-[#00AD8A] break-all"
                       htmlFor="anthropic-key-input"
                     >
                       Anthropic API Key

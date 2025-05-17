@@ -460,7 +460,7 @@ Examples could be:
                   className="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   <div className="flex flex-col items-start">
-                    <span className="flex-1">{tool.name}</span>
+                    <span className="flex-1 text-sm">{tool.name}</span>
                   </div>
                 </div>
               ))}
@@ -475,7 +475,7 @@ Examples could be:
                   className="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   <div className="flex flex-col items-start">
-                    <span className="flex-1">{resource.name}</span>
+                    <span className="flex-1 text-sm">{resource.name}</span>
                   </div>
                 </div>
               ))}
@@ -490,7 +490,7 @@ Examples could be:
                   className="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   <div className="flex flex-col items-start">
-                    <span className="flex-1">{prompt.name}</span>
+                    <span className="flex-1 text-sm">{prompt.name}</span>
                   </div>
                 </div>
               ))}
@@ -525,7 +525,7 @@ Examples could be:
               </p>
             )}
             {!isLoadingItems && findings.length === 0 && !isReviewing && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 italic">
                 Click "Start Security Review" to analyze items for potential
                 vulnerabilities.
               </p>

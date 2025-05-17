@@ -5,11 +5,9 @@ import { Anthropic } from "@anthropic-ai/sdk";
 import { useCallback, useEffect, useState } from "react";
 import { ToolUseBlock } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
 import { ContentBlock } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
-import { Button } from "./ui/button";
 import {
   ChevronRight,
   ChevronDown,
-  RefreshCwIcon,
   XCircleIcon,
   Loader2,
   CheckCircleIcon,
@@ -53,7 +51,7 @@ type ToolEvaluationResultProps =
         parameters: Record<string, unknown>;
       };
     }
-  | { status: "none" }
+  | { status: "none"; actualModelResponse: string }
   | { status: "error"; error: unknown }
   | { status: "loading" };
 
@@ -142,7 +140,12 @@ const ToolEvaluation = ({
     const toolUse = response.content.find(isToolUseBlock);
 
     if (!toolUse) {
-      setToolEvaluationResult({ status: "none" });
+      setToolEvaluationResult({
+        status: "none",
+        actualModelResponse:
+          response.content.find((block) => block.type === "text")?.text ??
+          "No model response",
+      });
       return;
     }
 
@@ -168,7 +171,6 @@ const ToolEvaluation = ({
 
   useEffect(() => {
     try {
-      console.log("evaluating tool call", testCase.id);
       evaluateToolCall();
     } catch (e) {
       setToolEvaluationResult({ status: "error", error: e });
@@ -224,7 +226,18 @@ const ToolEvaluation = ({
           </div>
         </div>
         {(toolEvaluationResult.status === "failed" ||
-          toolEvaluationResult.status === "success") && <hr />}
+          toolEvaluationResult.status === "success" ||
+          toolEvaluationResult.status === "none") && <hr />}
+        {toolEvaluationResult.status === "none" && (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              Actual Model Response
+            </div>
+            <div className="text-sm font-mono">
+              {toolEvaluationResult.actualModelResponse}
+            </div>
+          </div>
+        )}
         {(toolEvaluationResult.status === "failed" ||
           toolEvaluationResult.status === "success") && (
           <div>
@@ -252,7 +265,9 @@ const ToolsEvaluation = ({ tools, ...props }: ToolsEvaluationProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <h4 className="text-sm font-semibold">Test Cases</h4>
+      <h4 className="text-sm font-semibold">
+        {props.result.testCases.length} Test Cases
+      </h4>
       {props.result.testCases.map((testCase) => (
         <ToolEvaluation key={testCase.id} testCase={testCase} tools={tools} />
       ))}

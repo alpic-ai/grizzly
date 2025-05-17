@@ -330,7 +330,7 @@ export function useConnection({
           mcpProxyServerUrl = new URL(`${getMCPProxyAddress(config)}/sse`);
           mcpProxyServerUrl.searchParams.append("url", sseUrl);
           transportOptions = {
-            authProvider: serverAuthProvider,
+            // authProvider: serverAuthProvider,
             eventSourceInit: {
               fetch: (
                 url: string | URL | globalThis.Request,

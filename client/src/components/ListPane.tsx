@@ -13,7 +13,7 @@ type ListPaneProps<T> = {
   isButtonDisabled?: boolean;
   additionalActions?: {
     id: string;
-    text: string;
+    text: React.ReactNode;
     onClick: (items: T[]) => Promise<void>;
     isDisabled?: boolean;
   }[];

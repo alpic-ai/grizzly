@@ -657,10 +657,16 @@ const App = () => {
                   <TabsTrigger value="analysis">
                     <FlaskConical className="w-4 h-4 mr-2" />
                     Analysis
+                    <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-blue-500 rounded-full">
+                      NEW
+                    </span>
                   </TabsTrigger>
                   <TabsTrigger value="llm">
                     <Bot className="w-4 h-4 mr-2" />
                     LLM
+                    <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-blue-500 rounded-full">
+                      NEW
+                    </span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="resources"
@@ -682,6 +688,9 @@ const App = () => {
                   >
                     <Hammer className="w-4 h-4 mr-2" />
                     Tools
+                    <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-blue-500 rounded-full">
+                      NEW
+                    </span>
                   </TabsTrigger>
                   <TabsTrigger value="ping">
                     <Bell className="w-4 h-4 mr-2" />

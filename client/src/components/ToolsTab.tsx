@@ -154,7 +154,14 @@ const ToolsTab = ({
           additionalActions={[
             {
               id: "evaluate",
-              text: "Evaluate Tools",
+              text: (
+                <>
+                  Evaluate Tools
+                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-blue-500 rounded-full">
+                    NEW
+                  </span>
+                </>
+              ),
               onClick: async (items) => {
                 try {
                   const data = await new Promise<string>((resolve) =>

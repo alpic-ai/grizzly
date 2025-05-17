@@ -41,6 +41,8 @@ import {
   Hash,
   Key,
   MessageSquare,
+  LayoutDashboard,
+  Bot,
 } from "lucide-react";
 
 import { z } from "zod";
@@ -48,6 +50,8 @@ import "./App.css";
 import AuthDebugger from "./components/AuthDebugger";
 import ConsoleTab from "./components/ConsoleTab";
 import HistoryAndNotifications from "./components/History";
+import OverviewTab from "./components/OverviewTab";
+import LLMTab from "./components/LLMTab";
 import PingTab from "./components/PingTab";
 import PromptsTab, { Prompt } from "./components/PromptsTab";
 import ResourcesTab from "./components/ResourcesTab";
@@ -77,6 +81,8 @@ const App = () => {
   const [promptContent, setPromptContent] = useState<string>("");
   const [tools, setTools] = useState<Tool[]>([]);
   const [toolResult, setToolResult] =
+    useState<CompatibilityCallToolResult | null>(null);
+  const [chatToolResult, setChatToolResult] =
     useState<CompatibilityCallToolResult | null>(null);
   const [errors, setErrors] = useState<Record<string, string | null>>({
     resources: null,
@@ -161,6 +167,7 @@ const App = () => {
   >();
   const [nextToolCursor, setNextToolCursor] = useState<string | undefined>();
   const progressTokenRef = useRef(0);
+  const chatProgressTokenRef = useRef(0);
 
   const { height: historyPaneHeight, handleDragStart } = useDraggablePane(300);
 
@@ -317,7 +324,7 @@ const App = () => {
 
   useEffect(() => {
     if (!window.location.hash) {
-      window.location.hash = "resources";
+      window.location.hash = "overview";
     }
   }, []);
 
@@ -476,6 +483,39 @@ const App = () => {
     setNextToolCursor(response.nextCursor);
   };
 
+  const chatToolCall = async (
+    name: string,
+    params: Record<string, unknown>,
+  ) => {
+    try {
+      const response = await sendMCPRequest(
+        {
+          method: "tools/call" as const,
+          params: {
+            name,
+            arguments: params,
+            _meta: {
+              progressToken: chatProgressTokenRef.current++,
+            },
+          },
+        },
+        CompatibilityCallToolResultSchema,
+        "tools",
+      );
+      setChatToolResult(response);
+    } catch (e) {
+      const toolResult: CompatibilityCallToolResult = {
+        content: [
+          {
+            type: "text",
+            text: (e as Error).message ?? String(e),
+          },
+        ],
+      };
+      setChatToolResult(toolResult);
+    }
+  };
+
   const callTool = async (name: string, params: Record<string, unknown>) => {
     try {
       const response = await sendMCPRequest(
@@ -598,18 +638,20 @@ const App = () => {
                   window.location.hash.slice(1),
                 )
                   ? window.location.hash.slice(1)
-                  : serverCapabilities?.resources
-                    ? "resources"
-                    : serverCapabilities?.prompts
-                      ? "prompts"
-                      : serverCapabilities?.tools
-                        ? "tools"
-                        : "ping"
+                  : "overview"
               }
               className="w-full p-4"
               onValueChange={(value) => (window.location.hash = value)}
             >
               <TabsList className="mb-4 p-0">
+                <TabsTrigger value="overview">
+                  <LayoutDashboard className="w-4 h-4 mr-2" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="llm">
+                  <Bot className="w-4 h-4 mr-2" />
+                  LLM
+                </TabsTrigger>
                 <TabsTrigger
                   value="resources"
                   disabled={!serverCapabilities?.resources}
@@ -678,6 +720,18 @@ const App = () => {
                   </>
                 ) : (
                   <>
+                    <OverviewTab tools={tools} />
+                    <LLMTab
+                      tools={tools}
+                      chatToolCall={async (
+                        name: string,
+                        params: Record<string, unknown>,
+                      ) => {
+                        setChatToolResult(null);
+                        await chatToolCall(name, params);
+                      }}
+                      chatToolResult={chatToolResult}
+                    />
                     <ResourcesTab
                       resources={resources}
                       resourceTemplates={resourceTemplates}

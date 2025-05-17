@@ -184,7 +184,7 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
         setIsLoading(false);
       }
     },
-    [apiKey, messages, tools],
+    [apiKey, model, messages, tools],
   );
 
   // Handle tool result changes

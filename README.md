@@ -1,6 +1,6 @@
-# MCP Inspector
+# Inspector Grizzly
 
-The MCP inspector is a developer tool for testing and debugging MCP servers.
+The Inspector Grizzly is based on the MCP Inspector by anthropic!
 
 ![MCP Inspector Screenshot](https://raw.githubusercontent.com/modelcontextprotocol/inspector/main/mcp-inspector.png)
 

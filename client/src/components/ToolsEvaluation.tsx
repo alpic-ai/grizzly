@@ -5,6 +5,15 @@ import { Anthropic } from "@anthropic-ai/sdk";
 import { useCallback, useEffect, useState } from "react";
 import { ToolUseBlock } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
 import { ContentBlock } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
+import { Button } from "./ui/button";
+import {
+  ChevronRight,
+  ChevronDown,
+  RefreshCwIcon,
+  XCircleIcon,
+  Loader2,
+  CheckCircleIcon,
+} from "lucide-react";
 
 const isToolUseBlock = (block: ContentBlock): block is ToolUseBlock => {
   return block.type === "tool_use";
@@ -29,9 +38,14 @@ export type ToolsEvaluationProps = { tools: Tool[] } & (
   | { status: "error"; error: unknown }
 );
 
-type ToolEvaluationResult =
-  | { status: "success" }
-  | { status: "none" }
+type ToolEvaluationResultProps =
+  | {
+      status: "success";
+      actualToolCall: {
+        toolName: string;
+        parameters: Record<string, unknown>;
+      };
+    }
   | {
       status: "failed";
       actualToolCall: {
@@ -39,18 +53,67 @@ type ToolEvaluationResult =
         parameters: Record<string, unknown>;
       };
     }
+  | { status: "none" }
   | { status: "error"; error: unknown }
   | { status: "loading" };
 
-const ToolEvaluationResult = ({
+const ToolEvaluationResult = (
+  toolEvaluationResult: ToolEvaluationResultProps,
+) => {
+  switch (toolEvaluationResult.status) {
+    case "loading":
+      return (
+        <div className="bg-blue-50 text-sm text-blue-500 p-2 rounded-md flex flex-row gap-1 items-center">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Evaluating...
+        </div>
+      );
+
+    case "error":
+      return (
+        <div className="bg-red-50 text-sm text-red-500 p-2 rounded-md flex flex-row gap-1 items-center">
+          <XCircleIcon className="w-4 h-4" />
+          Error: {toolEvaluationResult.error?.toString()}
+        </div>
+      );
+
+    case "none":
+      return (
+        <div className="bg-red-50 text-sm text-red-500 p-2 rounded-md flex flex-row gap-1 items-center">
+          <XCircleIcon className="w-4 h-4" />
+          Failed: No tool call
+        </div>
+      );
+
+    case "failed":
+      return (
+        <div className="bg-red-50 text-sm text-red-500 p-2 rounded-md flex flex-row gap-1 items-center">
+          <XCircleIcon className="w-4 h-4" />
+          Failed: {toolEvaluationResult.actualToolCall.toolName}($
+          {JSON.stringify(toolEvaluationResult.actualToolCall.parameters)})`;
+        </div>
+      );
+
+    case "success":
+      return (
+        <div className="bg-green-50 text-sm text-green-500 p-2 rounded-md flex flex-row gap-1 items-center">
+          <CheckCircleIcon className="w-4 h-4" />
+          Success
+        </div>
+      );
+  }
+};
+
+const ToolEvaluation = ({
   testCase,
   tools,
 }: {
   testCase: TestCase;
   tools: Tool[];
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [toolEvaluationResult, setToolEvaluationResult] =
-    useState<ToolEvaluationResult>({ status: "loading" });
+    useState<ToolEvaluationResultProps>({ status: "loading" });
   const { model, apiKey } = useModel();
 
   const evaluateToolCall = useCallback(async () => {
@@ -84,7 +147,13 @@ const ToolEvaluationResult = ({
     }
 
     if (toolUse.name === testCase.expectedToolCall.toolName) {
-      setToolEvaluationResult({ status: "success" });
+      setToolEvaluationResult({
+        status: "success",
+        actualToolCall: {
+          toolName: toolUse.name,
+          parameters: toolUse.input as Record<string, unknown>,
+        },
+      });
       return;
     }
 
@@ -106,27 +175,70 @@ const ToolEvaluationResult = ({
     }
   }, [evaluateToolCall, setToolEvaluationResult, testCase.id]);
 
-  switch (toolEvaluationResult.status) {
-    case "loading":
-      return <div>Evaluating...</div>;
-
-    case "error":
-      return <div>Error: {toolEvaluationResult.error?.toString()}</div>;
-
-    case "none":
-      return <div>No tool call</div>;
-
-    case "failed":
-      return (
-        <div>
-          Failed: {toolEvaluationResult.actualToolCall.toolName}($
-          {JSON.stringify(toolEvaluationResult.actualToolCall.parameters)})`;
-        </div>
-      );
-
-    case "success":
-      return <div>Success</div>;
+  if (!isExpanded) {
+    return (
+      <div className="rounded-lg p-4 flex flex-row gap-2 items-center border border-gray-100">
+        <ChevronRight
+          className="w-4 h-4 cursor-pointer flex-shrink-0"
+          onClick={() => setIsExpanded(true)}
+        />
+        <span className="bg-gray-50 text-sm text-gray-500 p-2 rounded-md w-fit">
+          {testCase.id}
+        </span>
+        <ToolEvaluationResult {...toolEvaluationResult} />
+      </div>
+    );
   }
+
+  return (
+    <div
+      key={testCase.id}
+      className="rounded-lg p-4 flex flex-row gap-2 border border-gray-100"
+    >
+      <ChevronDown
+        className="w-4 h-4 mt-2 cursor-pointer flex-shrink-0"
+        onClick={() => setIsExpanded(false)}
+      />
+      <div
+        key={testCase.id}
+        className="flex flex-col gap-2"
+        onClick={() => setIsExpanded(false)}
+      >
+        <div className="flex flex-row gap-2 items-center">
+          <span className="bg-gray-50 text-sm text-gray-500 p-2 rounded-md w-fit">
+            {testCase.id}
+          </span>
+          <ToolEvaluationResult {...toolEvaluationResult} />
+        </div>
+        <div>
+          <div className="text-sm text-muted-foreground mb-1">Prompt</div>
+          <div className="text-sm">{testCase.userPrompt}</div>
+        </div>
+        <hr />
+        <div>
+          <div className="text-sm text-muted-foreground mb-1">
+            Expected Tool Call
+          </div>
+          <div className="text-sm font-mono">
+            {`${testCase.expectedToolCall.toolName}(${JSON.stringify(testCase.expectedToolCall.parameters)})`}
+          </div>
+        </div>
+        {(toolEvaluationResult.status === "failed" ||
+          toolEvaluationResult.status === "success") && <hr />}
+        {(toolEvaluationResult.status === "failed" ||
+          toolEvaluationResult.status === "success") && (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              Actual Tool Call
+            </div>
+            <div className="text-sm font-mono">
+              {`${toolEvaluationResult.actualToolCall.toolName}(${JSON.stringify(toolEvaluationResult.actualToolCall.parameters)})`}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 const ToolsEvaluation = ({ tools, ...props }: ToolsEvaluationProps) => {
@@ -142,31 +254,7 @@ const ToolsEvaluation = ({ tools, ...props }: ToolsEvaluationProps) => {
     <div className="flex flex-col gap-4">
       <h4 className="text-sm font-semibold">Test Cases</h4>
       {props.result.testCases.map((testCase) => (
-        <div
-          key={testCase.id}
-          className="bg-blue-50 rounded-lg p-4 flex flex-col gap-2"
-        >
-          <div>
-            <div className="text-sm text-muted-foreground mb-1">Prompt</div>
-            <div className="text-sm">{testCase.userPrompt}</div>
-          </div>
-          <hr />
-          <div>
-            <div className="text-sm text-muted-foreground mb-1">
-              Expected Tool Call
-            </div>
-            <div className="text-sm font-mono bg-background p-2 rounded">
-              {`${testCase.expectedToolCall.toolName}(${JSON.stringify(testCase.expectedToolCall.parameters)})`}
-            </div>
-          </div>
-          <hr />
-          <div>
-            <div className="text-sm text-muted-foreground mb-1">
-              Test Result
-            </div>
-            <ToolEvaluationResult testCase={testCase} tools={tools} />
-          </div>
-        </div>
+        <ToolEvaluation key={testCase.id} testCase={testCase} tools={tools} />
       ))}
     </div>
   );

@@ -86,7 +86,7 @@ const ListPane = <T extends object>({
           {isAdditionalActionRunning ? (
             <div className="flex flex-row items-center">
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Running...
+              Generating test cases...
             </div>
           ) : items.length === 0 ? (
             listPlaceholder

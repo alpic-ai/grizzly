@@ -5,12 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, User } from "lucide-react";
+import { Bot, InfoIcon, Send, User } from "lucide-react";
 import { Anthropic } from "@anthropic-ai/sdk";
 import {
   CompatibilityCallToolResult,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
+import useModel from "@/lib/hooks/useModel";
 
 interface Message {
   role: "user" | "assistant";
@@ -43,10 +44,7 @@ interface AnthropicStreamChunk {
 }
 
 const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
-  const [apiKey, setApiKey] = useState(() => {
-    return localStorage.getItem("anthropic_api_key") || "";
-  });
-  const [isKeyValid, setIsKeyValid] = useState(false);
+  const { isModelConfigured, apiKey } = useModel();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -61,13 +59,6 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
   } | null>(null);
   const [toolCallArgs, setToolCallArgs] = useState<Record<string, unknown>>({});
   const [toolCallError, setToolCallError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem("anthropic_api_key", apiKey);
-      setIsKeyValid(true);
-    }
-  }, [apiKey]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -96,7 +87,7 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !isKeyValid || isLoading) return;
+    if (!input.trim() || !isModelConfigured || isLoading) return;
 
     const userMessage: Message = { role: "user", content: input.trim() };
     setInput("");
@@ -216,7 +207,6 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error("An error occurred"));
-      setIsKeyValid(false);
     } finally {
       setIsLoading(false);
     }
@@ -246,41 +236,24 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
   return (
     <TabsContent value="llm">
       <div className="grid grid-cols-1 gap-4">
-        <Card className="p-4">
-          <div className="mb-4">
-            <Label htmlFor="api-key">Anthropic API Key</Label>
-            <div className="flex gap-2 mt-1">
-              <Input
-                id="api-key"
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter your Anthropic API key"
-                className="flex-1"
-              />
-              <Button
-                variant="outline"
-                onClick={() => {
-                  localStorage.removeItem("anthropic_api_key");
-                  setApiKey("");
-                  setIsKeyValid(false);
-                }}
-              >
-                Clear
-              </Button>
+        <Card className="p-4 flex flex-col gap-4">
+          {!isModelConfigured && (
+            <div className=" bg-blue-50 text-blue-500 flex flex-row items-center gap-2 p-2 rounded-md text-sm">
+              <InfoIcon className="h-4 w-4 flex-shrink-0" />
+              In order to use this feature, please configure the model using
+              corresponding configuration tab in the sidebar.
             </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="mb-4">
+          )}
+          <form onSubmit={handleSubmit}>
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                disabled={!isKeyValid || isLoading}
+                disabled={!isModelConfigured || isLoading}
                 className="flex-1"
               />
-              <Button type="submit" disabled={!isKeyValid || isLoading}>
+              <Button type="submit" disabled={!isModelConfigured || isLoading}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>

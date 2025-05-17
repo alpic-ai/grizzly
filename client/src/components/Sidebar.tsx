@@ -39,6 +39,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { useToast } from "../lib/hooks/useToast";
+import useModel from "@/lib/hooks/useModel";
 
 interface SidebarProps {
   connectionStatus: ConnectionStatus;
@@ -97,6 +98,8 @@ const Sidebar = ({
   const [showEnvVars, setShowEnvVars] = useState(false);
   const [showBearerToken, setShowBearerToken] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [showModels, setShowModels] = useState(false);
+  const { apiKey, setApiKey } = useModel();
   const [shownEnvVars, setShownEnvVars] = useState<Set<string>>(new Set());
   const [copiedServerEntry, setCopiedServerEntry] = useState(false);
   const [copiedServerFile, setCopiedServerFile] = useState(false);
@@ -601,6 +604,51 @@ const Sidebar = ({
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          {/* Models */}
+          <div className="space-y-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowModels((showModels) => !showModels)}
+              className="flex items-center w-full"
+              data-testid="config-button"
+              aria-expanded={showModels}
+            >
+              {showModels ? (
+                <ChevronDown className="w-4 h-4 mr-2" />
+              ) : (
+                <ChevronRight className="w-4 h-4 mr-2" />
+              )}
+              <Settings className="w-4 h-4 mr-2" />
+              Models
+            </Button>
+            {showModels && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <label
+                    className="text-sm font-medium text-green-600 break-all"
+                    htmlFor="anthropic-key-input"
+                  >
+                    Anthropic API Key
+                  </label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      The API Key of your Anthropic account
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Input
+                  id="anthropic-key-input"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="font-mono"
+                />
               </div>
             )}
           </div>

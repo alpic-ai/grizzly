@@ -2,7 +2,16 @@
 
 The Inspector Grizzly is based on the MCP Inspector by anthropic!
 
-![MCP Inspector Screenshot](https://raw.githubusercontent.com/modelcontextprotocol/inspector/main/mcp-inspector.png)
+![MCP Inspector Grizzly Screenshot](./grizzly.png)
+
+## What's new ?
+
+Grizzly packages a bunch of additional features :
+
+- A server analyzer to scan unknown MCP server and check for security issue (like Prompt injection and Poisoned-tools)
+- A playground to use MCP server tools within the context of a chat conversation and avoid going back and forth between the inspector and an LLM application
+- A suite of good practice tests on MCP server tools to help you improve your MCP server discoverability
+- A test case generator to assert potential tool confusion among your MCP server capabilities
 
 ## Running the Inspector
 
@@ -15,29 +24,29 @@ The Inspector Grizzly is based on the MCP Inspector by anthropic!
 To inspect an MCP server implementation, there's no need to clone this repo. Instead, use `npx`. For example, if your server is built at `build/index.js`:
 
 ```bash
-npx @modelcontextprotocol/inspector node build/index.js
+npx @alpic-ai/grizzly node build/index.js
 ```
 
 You can pass both arguments and environment variables to your MCP server. Arguments are passed directly to your server, while environment variables can be set using the `-e` flag:
 
 ```bash
 # Pass arguments only
-npx @modelcontextprotocol/inspector node build/index.js arg1 arg2
+npx @alpic-ai/grizzly node build/index.js arg1 arg2
 
 # Pass environment variables only
-npx @modelcontextprotocol/inspector -e key=value -e key2=$VALUE2 node build/index.js
+npx @alpic-ai/grizzly -e key=value -e key2=$VALUE2 node build/index.js
 
 # Pass both environment variables and arguments
-npx @modelcontextprotocol/inspector -e key=value -e key2=$VALUE2 node build/index.js arg1 arg2
+npx @alpic-ai/grizzly -e key=value -e key2=$VALUE2 node build/index.js arg1 arg2
 
 # Use -- to separate inspector flags from server arguments
-npx @modelcontextprotocol/inspector -e key=$VALUE -- node build/index.js -e server-flag
+npx @alpic-ai/grizzly -e key=$VALUE -- node build/index.js -e server-flag
 ```
 
 The inspector runs both an MCP Inspector (MCPI) client UI (default port 6274) and an MCP Proxy (MCPP) server (default port 6277). Open the MCPI client UI in your browser to use the inspector. (These ports are derived from the T9 dialpad mapping of MCPI and MCPP respectively, as a mnemonic). You can customize the ports if needed:
 
 ```bash
-CLIENT_PORT=8080 SERVER_PORT=9000 npx @modelcontextprotocol/inspector node build/index.js
+CLIENT_PORT=8080 SERVER_PORT=9000 npx @alpic-ai/grizzly node build/index.js
 ```
 
 For more details on ways to use the inspector, see the [Inspector section of the MCP docs site](https://modelcontextprotocol.io/docs/tools/inspector). For help with debugging, see the [Debugging guide](https://modelcontextprotocol.io/docs/tools/debugging).
@@ -135,7 +144,7 @@ These settings can be adjusted in real-time through the UI and will persist acro
 The inspector also supports configuration files to store settings for different MCP servers. This is useful when working with multiple servers or complex configurations:
 
 ```bash
-npx @modelcontextprotocol/inspector --config path/to/config.json --server everything
+npx @alpic-ai/grizzly --config path/to/config.json --server everything
 ```
 
 Example server configuration file:
@@ -209,38 +218,38 @@ npm start
 CLI mode enables programmatic interaction with MCP servers from the command line, ideal for scripting, automation, and integration with coding assistants. This creates an efficient feedback loop for MCP server development.
 
 ```bash
-npx @modelcontextprotocol/inspector --cli node build/index.js
+npx @alpic-ai/grizzly --cli node build/index.js
 ```
 
 The CLI mode supports most operations across tools, resources, and prompts. A few examples:
 
 ```bash
 # Basic usage
-npx @modelcontextprotocol/inspector --cli node build/index.js
+npx @alpic-ai/grizzly --cli node build/index.js
 
 # With config file
-npx @modelcontextprotocol/inspector --cli --config path/to/config.json --server myserver
+npx @alpic-ai/grizzly --cli --config path/to/config.json --server myserver
 
 # List available tools
-npx @modelcontextprotocol/inspector --cli node build/index.js --method tools/list
+npx @alpic-ai/grizzly --cli node build/index.js --method tools/list
 
 # Call a specific tool
-npx @modelcontextprotocol/inspector --cli node build/index.js --method tools/call --tool-name mytool --tool-arg key=value --tool-arg another=value2
+npx @alpic-ai/grizzly --cli node build/index.js --method tools/call --tool-name mytool --tool-arg key=value --tool-arg another=value2
 
 # List available resources
-npx @modelcontextprotocol/inspector --cli node build/index.js --method resources/list
+npx @alpic-ai/grizzly --cli node build/index.js --method resources/list
 
 # List available prompts
-npx @modelcontextprotocol/inspector --cli node build/index.js --method prompts/list
+npx @alpic-ai/grizzly --cli node build/index.js --method prompts/list
 
 # Connect to a remote MCP server
-npx @modelcontextprotocol/inspector --cli https://my-mcp-server.example.com
+npx @alpic-ai/grizzly --cli https://my-mcp-server.example.com
 
 # Call a tool on a remote server
-npx @modelcontextprotocol/inspector --cli https://my-mcp-server.example.com --method tools/call --tool-name remotetool --tool-arg param=value
+npx @alpic-ai/grizzly --cli https://my-mcp-server.example.com --method tools/call --tool-name remotetool --tool-arg param=value
 
 # List resources from a remote server
-npx @modelcontextprotocol/inspector --cli https://my-mcp-server.example.com --method resources/list
+npx @alpic-ai/grizzly --cli https://my-mcp-server.example.com --method resources/list
 ```
 
 ### UI Mode vs CLI Mode: When to Use Each

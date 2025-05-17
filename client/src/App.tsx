@@ -41,7 +41,7 @@ import {
   Hash,
   Key,
   MessageSquare,
-  LayoutDashboard,
+  FlaskConical,
   Bot,
 } from "lucide-react";
 
@@ -50,7 +50,7 @@ import "./App.css";
 import AuthDebugger from "./components/AuthDebugger";
 import ConsoleTab from "./components/ConsoleTab";
 import HistoryAndNotifications from "./components/History";
-import OverviewTab from "./components/OverviewTab";
+import AnalysisTab from "./components/AnalysisTab";
 import LLMTab from "./components/LLMTab";
 import PingTab from "./components/PingTab";
 import PromptsTab, { Prompt } from "./components/PromptsTab";
@@ -327,7 +327,7 @@ const App = () => {
 
   useEffect(() => {
     if (!window.location.hash) {
-      window.location.hash = "overview";
+      window.location.hash = "analysis";
     }
   }, []);
 
@@ -473,7 +473,7 @@ const App = () => {
     setPromptContent(JSON.stringify(response, null, 2));
   };
 
-  const listTools = async () => {
+  const listTools = async (): Promise<Tool[]> => {
     const response = await sendMCPRequest(
       {
         method: "tools/list" as const,
@@ -482,8 +482,10 @@ const App = () => {
       ListToolsResultSchema,
       "tools",
     );
-    setTools(response.tools);
+    const fetchedTools = response.tools || [];
+    setTools(fetchedTools);
     setNextToolCursor(response.nextCursor);
+    return fetchedTools;
   };
 
   const chatToolCall = async (
@@ -642,15 +644,15 @@ const App = () => {
                     window.location.hash.slice(1),
                   )
                     ? window.location.hash.slice(1)
-                    : "overview"
+                    : "analysis"
                 }
                 className="w-full p-4"
                 onValueChange={(value) => (window.location.hash = value)}
               >
                 <TabsList className="mb-4 p-0">
-                  <TabsTrigger value="overview">
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
-                    Overview
+                  <TabsTrigger value="analysis">
+                    <FlaskConical className="w-4 h-4 mr-2" />
+                    Analysis
                   </TabsTrigger>
                   <TabsTrigger value="llm">
                     <Bot className="w-4 h-4 mr-2" />
@@ -724,7 +726,13 @@ const App = () => {
                     </>
                   ) : (
                     <>
-                      <OverviewTab tools={tools} />
+                      <AnalysisTab
+                        tools={tools}
+                        listTools={async () => {
+                          clearError("tools");
+                          return await listTools();
+                        }}
+                      />
                       <LLMTab
                         tools={tools}
                         chatToolCall={async (

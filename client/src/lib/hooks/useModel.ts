@@ -8,10 +8,12 @@ export const MODELS = [
   "claude-3-5-haiku-20241022",
 ] as const;
 
+export type Model = (typeof MODELS)[number];
+
 interface ModelContextType {
   isModelConfigured: boolean;
-  model: (typeof MODELS)[number];
-  setModel: (model: (typeof MODELS)[number]) => void;
+  model: Model;
+  setModel: (model: Model) => void;
   apiKey: string;
   setApiKey: (key: string) => void;
   clearKey: () => void;
@@ -23,8 +25,8 @@ export const useModelContext = () => {
   const [apiKey, setApiKey] = useState(
     () => localStorage.getItem(LOCAL_STORAGE_API_KEY_KEY) ?? "",
   );
-  const [model, setModel] = useState(
-    () => localStorage.getItem(LOCAL_STORAGE_MODEL_KEY) ?? MODELS[0],
+  const [model, setModel] = useState<Model>(
+    () => (localStorage.getItem(LOCAL_STORAGE_MODEL_KEY) as Model) ?? MODELS[0],
   );
 
   useEffect(() => {

@@ -39,7 +39,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { useToast } from "../lib/hooks/useToast";
-import useModel, { MODELS } from "@/lib/hooks/useModel";
+import useModel, { Model, MODELS } from "@/lib/hooks/useModel";
 
 interface SidebarProps {
   connectionStatus: ConnectionStatus;
@@ -647,9 +647,7 @@ const Sidebar = ({
                   <div className="flex flex-row gap-2">
                     <Select
                       value={model}
-                      onValueChange={(e) =>
-                        setModel(e as (typeof MODELS)[number])
-                      }
+                      onValueChange={(e) => setModel(e as Model)}
                     >
                       <SelectTrigger id="model-select-input">
                         <SelectValue />

@@ -21,6 +21,7 @@ import JsonView from "./JsonView";
 import ToolChecksSummary from "./ToolChecksSummary";
 import ToolChecks from "./ToolChecks";
 import ToolsEvaluation, { ToolsEvaluationProps } from "./ToolsEvaluation";
+import useModel from "@/lib/hooks/useModel";
 
 const ToolsTab = ({
   tools,
@@ -42,6 +43,7 @@ const ToolsTab = ({
   nextCursor: ListToolsResult["nextCursor"];
   error: string | null;
 }) => {
+  const { isModelConfigured } = useModel();
   const [params, setParams] = useState<Record<string, unknown>>({});
   const [isToolRunning, setIsToolRunning] = useState(false);
   const [toolsEvaluationResult, setToolsEvaluationResult] =
@@ -172,6 +174,9 @@ const ToolsTab = ({
                   setToolsEvaluationResult({ status: "error", error: e });
                 }
               },
+              isDisabled: !isModelConfigured,
+              disabledTooltipText:
+                "In order to use this feature, please configure the model using corresponding configuration tab in the sidebar.",
             },
           ]}
           listPlaceholder={

@@ -16,6 +16,7 @@ type ListPaneProps<T> = {
     text: React.ReactNode;
     onClick: (items: T[]) => Promise<void>;
     isDisabled?: boolean;
+    disabledTooltipText?: string;
   }[];
   listPlaceholder?: React.ReactNode;
 };

@@ -22,6 +22,7 @@ import ToolChecksSummary from "./ToolChecksSummary";
 import ToolChecks from "./ToolChecks";
 import ToolsEvaluation, { ToolsEvaluationProps } from "./ToolsEvaluation";
 import useModel from "@/lib/hooks/useModel";
+import { Anthropic } from "@anthropic-ai/sdk";
 
 const ToolsTab = ({
   tools,
@@ -43,7 +44,7 @@ const ToolsTab = ({
   nextCursor: ListToolsResult["nextCursor"];
   error: string | null;
 }) => {
-  const { isModelConfigured } = useModel();
+  const { isModelConfigured, model, apiKey } = useModel();
   const [params, setParams] = useState<Record<string, unknown>>({});
   const [isToolRunning, setIsToolRunning] = useState(false);
   const [toolsEvaluationResult, setToolsEvaluationResult] =
@@ -164,14 +165,76 @@ const ToolsTab = ({
                   </span>
                 </>
               ),
-              onClick: async (items) => {
+              onClick: async (tools) => {
                 try {
-                  const data = await new Promise<string>((resolve) =>
-                    setTimeout(() => resolve(`${items.length} tools`), 2000),
-                  );
-                  setToolsEvaluationResult({ status: "success", result: data });
+                  const anthropic = new Anthropic({
+                    apiKey,
+                    dangerouslyAllowBrowser: true,
+                  });
+
+                  const STARTER = '{"testCases":[';
+                  const response = await anthropic.messages.create({
+                    model,
+                    max_tokens: 1024,
+                    system: `You're a Model Context Protocol expert and are tasked with evaluating a new MCP server.
+                      Generate test cases that evaluate whether a language model can correctly distinguish between similar tools.
+                      These test cases should specifically target potential confusion points between tools with similar names, descriptions, or parameters that you have in your context.
+                      
+                      The test cases you generate should be in the following JSON format:
+
+                      {
+                        "testCases": [
+                          {
+                            "id": "TC001",
+                            "userPrompt": "What is the weather in Tokyo?",
+                            "expectedToolCall": {
+                              toolName: "get_weather"
+                              parameters: {
+                                location: "Tokyo"
+                              }
+                            }
+                          }
+                        ]
+                      } 
+
+                      Your answer should only contain the JSON object, nothing else.
+                    `,
+                    tool_choice: { type: "none" },
+                    messages: [
+                      {
+                        role: "user",
+                        content:
+                          "Create a suite of test prompts that deliberately test edge cases between similar tools, measuring how often the model selects the correct tool.",
+                      },
+                      {
+                        role: "assistant",
+                        content: STARTER,
+                      },
+                    ],
+                    tools: tools.map((tool) => ({
+                      name: tool.name,
+                      description:
+                        tool.description || "No description available",
+                      input_schema: tool.inputSchema,
+                    })),
+                  });
+
+                  setToolsEvaluationResult({
+                    tools,
+                    status: "success",
+                    result:
+                      response.content[0].type === "text"
+                        ? JSON.parse(
+                            [STARTER, response.content[0].text].join(""),
+                          )
+                        : { testCases: [] },
+                  });
                 } catch (e) {
-                  setToolsEvaluationResult({ status: "error", error: e });
+                  setToolsEvaluationResult({
+                    tools,
+                    status: "error",
+                    error: e,
+                  });
                 }
               },
               isDisabled: !isModelConfigured,

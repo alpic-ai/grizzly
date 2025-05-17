@@ -1,5 +1,5 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -44,7 +44,7 @@ interface AnthropicStreamChunk {
 }
 
 const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
-  const { isModelConfigured, apiKey } = useModel();
+  const { isModelConfigured, model, apiKey } = useModel();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -68,6 +68,125 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
     scrollToBottom();
   }, [messages]);
 
+  const manageConversation = useCallback(
+    async (newMessage: Message) => {
+      setMessages((prev) => [...prev, newMessage]);
+
+      try {
+        const anthropic = new Anthropic({
+          apiKey,
+          dangerouslyAllowBrowser: true,
+        });
+
+        // Create system message
+        const systemMessage = {
+          role: "assistant" as const,
+          content:
+            "You are a helpful AI assistant with access to tools. Please use these tools when appropriate to help the user.",
+        };
+
+        // Format tools according to Anthropic API specification
+        const formattedTools = tools.map((tool) => ({
+          name: tool.name,
+          description: tool.description || "No description available",
+          input_schema: tool.inputSchema,
+        }));
+
+        const stream = await anthropic.messages.create({
+          model,
+          max_tokens: 1024,
+          messages: [systemMessage, ...messages, newMessage].map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          tools: formattedTools,
+          stream: true,
+        });
+
+        let assistantMessage = "";
+        setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+        // Tool use streaming state
+        let currentToolCall: {
+          toolName: string;
+          toolId: string;
+          args: Record<string, unknown>;
+          tool: Tool | null;
+          messageIdx: number;
+        } | null = null;
+        let toolInputJsonStringAccumulator: string = "";
+
+        for await (const chunk of stream as unknown as Iterable<AnthropicStreamChunk>) {
+          // Handle text deltas as before
+          if (
+            chunk.type === "content_block_delta" &&
+            chunk.delta?.type === "text_delta"
+          ) {
+            assistantMessage += chunk.delta.text || "";
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              newMessages[newMessages.length - 1] = {
+                role: "assistant",
+                content: assistantMessage,
+              };
+              return newMessages;
+            });
+          }
+          // Detect start of a tool call
+          else if (
+            chunk.type === "content_block_start" &&
+            chunk.content_block?.type === "tool_use"
+          ) {
+            const contentBlock = chunk.content_block;
+            currentToolCall = {
+              toolName: contentBlock.name,
+              toolId: contentBlock.id,
+              args: {},
+              tool: tools.find((t) => t.name === contentBlock.name) || null,
+              messageIdx: messages.length,
+            };
+            toolInputJsonStringAccumulator = "";
+          }
+          // Accumulate tool call input JSON string fragments
+          else if (
+            chunk.type === "content_block_delta" &&
+            chunk.delta?.type === "input_json_delta" &&
+            currentToolCall
+          ) {
+            if (chunk.delta.partial_json) {
+              toolInputJsonStringAccumulator += chunk.delta.partial_json;
+            }
+          }
+          // End of tool call block: parse accumulated JSON and trigger tool call UI/modal
+          else if (chunk.type === "content_block_stop" && currentToolCall) {
+            try {
+              const parsedArgs = JSON.parse(toolInputJsonStringAccumulator);
+              currentToolCall.args = parsedArgs;
+              setPendingToolCall(currentToolCall);
+              setToolCallArgs(parsedArgs);
+            } catch (e) {
+              console.error(
+                "Failed to parse accumulated tool input JSON:",
+                toolInputJsonStringAccumulator,
+                e,
+              );
+              currentToolCall.args = {};
+              setPendingToolCall(currentToolCall);
+              setToolCallArgs({});
+            }
+            currentToolCall = null;
+            toolInputJsonStringAccumulator = "";
+          }
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error("An error occurred"));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [apiKey, messages, tools],
+  );
+
   // Handle tool result changes
   useEffect(() => {
     if (chatToolResult) {
@@ -83,7 +202,7 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
 
       manageConversation(toolResultMessage);
     }
-  }, [chatToolResult]);
+  }, [chatToolResult, manageConversation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,122 +213,6 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
     setIsLoading(true);
     setError(null);
     manageConversation(userMessage);
-  };
-
-  const manageConversation = async (newMessage: Message) => {
-    setMessages((prev) => [...prev, newMessage]);
-
-    try {
-      const anthropic = new Anthropic({
-        apiKey,
-        dangerouslyAllowBrowser: true,
-      });
-
-      // Create system message
-      const systemMessage = {
-        role: "assistant" as const,
-        content:
-          "You are a helpful AI assistant with access to tools. Please use these tools when appropriate to help the user.",
-      };
-
-      // Format tools according to Anthropic API specification
-      const formattedTools = tools.map((tool) => ({
-        name: tool.name,
-        description: tool.description || "No description available",
-        input_schema: tool.inputSchema,
-      }));
-
-      const stream = await anthropic.messages.create({
-        model: "claude-3-7-sonnet-20250219",
-        max_tokens: 1024,
-        messages: [systemMessage, ...messages, newMessage].map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
-        tools: formattedTools,
-        stream: true,
-      });
-
-      let assistantMessage = "";
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-      // Tool use streaming state
-      let currentToolCall: {
-        toolName: string;
-        toolId: string;
-        args: Record<string, unknown>;
-        tool: Tool | null;
-        messageIdx: number;
-      } | null = null;
-      let toolInputJsonStringAccumulator: string = "";
-
-      for await (const chunk of stream as unknown as Iterable<AnthropicStreamChunk>) {
-        // Handle text deltas as before
-        if (
-          chunk.type === "content_block_delta" &&
-          chunk.delta?.type === "text_delta"
-        ) {
-          assistantMessage += chunk.delta.text || "";
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1] = {
-              role: "assistant",
-              content: assistantMessage,
-            };
-            return newMessages;
-          });
-        }
-        // Detect start of a tool call
-        else if (
-          chunk.type === "content_block_start" &&
-          chunk.content_block?.type === "tool_use"
-        ) {
-          const contentBlock = chunk.content_block;
-          currentToolCall = {
-            toolName: contentBlock.name,
-            toolId: contentBlock.id,
-            args: {},
-            tool: tools.find((t) => t.name === contentBlock.name) || null,
-            messageIdx: messages.length,
-          };
-          toolInputJsonStringAccumulator = "";
-        }
-        // Accumulate tool call input JSON string fragments
-        else if (
-          chunk.type === "content_block_delta" &&
-          chunk.delta?.type === "input_json_delta" &&
-          currentToolCall
-        ) {
-          if (chunk.delta.partial_json) {
-            toolInputJsonStringAccumulator += chunk.delta.partial_json;
-          }
-        }
-        // End of tool call block: parse accumulated JSON and trigger tool call UI/modal
-        else if (chunk.type === "content_block_stop" && currentToolCall) {
-          try {
-            const parsedArgs = JSON.parse(toolInputJsonStringAccumulator);
-            currentToolCall.args = parsedArgs;
-            setPendingToolCall(currentToolCall);
-            setToolCallArgs(parsedArgs);
-          } catch (e) {
-            console.error(
-              "Failed to parse accumulated tool input JSON:",
-              toolInputJsonStringAccumulator,
-              e,
-            );
-            currentToolCall.args = {};
-            setPendingToolCall(currentToolCall);
-            setToolCallArgs({});
-          }
-          currentToolCall = null;
-          toolInputJsonStringAccumulator = "";
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("An error occurred"));
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   // Tool call modal approval handler

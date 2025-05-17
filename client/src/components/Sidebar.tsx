@@ -39,7 +39,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { useToast } from "../lib/hooks/useToast";
-import useModel from "@/lib/hooks/useModel";
+import useModel, { MODELS } from "@/lib/hooks/useModel";
 
 interface SidebarProps {
   connectionStatus: ConnectionStatus;
@@ -99,7 +99,7 @@ const Sidebar = ({
   const [showBearerToken, setShowBearerToken] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [showModels, setShowModels] = useState(false);
-  const { apiKey, setApiKey } = useModel();
+  const { model, setModel, apiKey, setApiKey, clearKey } = useModel();
   const [shownEnvVars, setShownEnvVars] = useState<Set<string>>(new Set());
   const [copiedServerEntry, setCopiedServerEntry] = useState(false);
   const [copiedServerFile, setCopiedServerFile] = useState(false);
@@ -627,28 +627,73 @@ const Sidebar = ({
             </Button>
             {showModels && (
               <div className="space-y-2">
-                <div className="flex items-center gap-1">
-                  <label
-                    className="text-sm font-medium text-green-600 break-all"
-                    htmlFor="anthropic-key-input"
-                  >
-                    Anthropic API Key
-                  </label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      The API Key of your Anthropic account
-                    </TooltipContent>
-                  </Tooltip>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1">
+                    <label
+                      className="text-sm font-medium text-green-600 break-all"
+                      htmlFor="model-select-input"
+                    >
+                      Anthropic Model
+                    </label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        The model to use for the LLM.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="flex flex-row gap-2">
+                    <Select
+                      value={model}
+                      onValueChange={(e) =>
+                        setModel(e as (typeof MODELS)[number])
+                      }
+                    >
+                      <SelectTrigger id="model-select-input">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MODELS.map((modelName) => (
+                          <SelectItem key={modelName} value={modelName}>
+                            {modelName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <Input
-                  id="anthropic-key-input"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="font-mono"
-                />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1">
+                    <label
+                      className="text-sm font-medium text-green-600 break-all"
+                      htmlFor="anthropic-key-input"
+                    >
+                      Anthropic API Key
+                    </label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        The API Key of your Anthropic account
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="flex flex-row gap-2">
+                    <Input
+                      id="anthropic-key-input"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="font-mono"
+                      type="password"
+                    />
+                    <Button variant="outline" onClick={clearKey}>
+                      Clear
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

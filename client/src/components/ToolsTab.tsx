@@ -18,6 +18,9 @@ import { Loader2, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import ListPane from "./ListPane";
 import JsonView from "./JsonView";
+import ToolChecksSummary from "./ToolChecksSummary";
+import ToolChecks from "./ToolChecks";
+import ToolsEvaluation, { ToolsEvaluationProps } from "./ToolsEvaluation";
 
 const ToolsTab = ({
   tools,
@@ -154,6 +157,7 @@ const ToolsTab = ({
           <div className="p-4">
             {selectedTool ? (
               <div className="space-y-4">
+                <ToolChecks tool={selectedTool} />
                 <p className="text-sm text-gray-600">
                   {selectedTool.description}
                 </p>

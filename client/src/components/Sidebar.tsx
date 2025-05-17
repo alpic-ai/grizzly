@@ -41,6 +41,9 @@ import {
 import { useToast } from "../lib/hooks/useToast";
 import useModel, { Model, MODELS } from "@/lib/hooks/useModel";
 
+import grizzlyDarkLogo from "@/assets/grizzly-dark.svg";
+import grizzlyLightLogo from "@/assets/grizzly-light.svg";
+
 interface SidebarProps {
   connectionStatus: ConnectionStatus;
   transportType: "stdio" | "sse" | "streamable-http";
@@ -220,8 +223,25 @@ const Sidebar = ({
     <div className="w-80 bg-card border-r border-border flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center">
-          <h1 className="ml-2 text-lg font-semibold">
-            MCP Inspector v{version}
+          {theme === "dark" ||
+          (theme === "system" &&
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches) ? (
+            <img
+              src={grizzlyDarkLogo}
+              alt="Grizzly Dark Logo"
+              className="w-12 h-12 mr-3"
+            />
+          ) : (
+            <img
+              src={grizzlyLightLogo}
+              alt="Grizzly Light Logo"
+              className="w-12 h-12 mr-3"
+            />
+          )}
+          <h1 className="text-lg font-semibold">
+            {" "}
+            Inspector Grizzly {version}
           </h1>
         </div>
       </div>
@@ -624,6 +644,9 @@ const Sidebar = ({
               )}
               <Settings className="w-4 h-4 mr-2" />
               Models
+              <span className="ml-2 px-2 py-0.5 text-xs font-semibold tracking-wide text-white bg-blue-500 rounded-full">
+                NEW
+              </span>
             </Button>
             {showModels && (
               <div className="space-y-2">

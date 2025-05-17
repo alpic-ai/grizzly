@@ -1,5 +1,5 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { Tool } from "@modelcontextprotocol/sdk/types.js";
+import { Tool, Prompt, Resource } from "@modelcontextprotocol/sdk/types.js";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Anthropic } from "@anthropic-ai/sdk";
@@ -25,10 +25,21 @@ interface SecurityFinding {
 
 interface AnalysisTabProps {
   tools: Tool[];
+  prompts: Prompt[];
+  resources: Resource[];
   listTools: () => Promise<Tool[]>;
+  listPrompts: () => Promise<Prompt[]>;
+  listResources: () => Promise<Resource[]>;
 }
 
-const AnalysisTab = ({ tools, listTools }: AnalysisTabProps) => {
+const AnalysisTab = ({
+  tools,
+  listTools,
+  prompts,
+  listPrompts,
+  resources,
+  listResources,
+}: AnalysisTabProps) => {
   const { isModelConfigured, apiKey } = useModel();
   const [isReviewing, setIsReviewing] = useState(false);
   const [isLoadingTools, setIsLoadingTools] = useState(false);
@@ -89,13 +100,29 @@ Examples could be:
     } catch (error) {
       console.error("Error listing tools:", error);
       setFindings([
-        { toolName: "System", type: "error", message: "Failed to list tools." },
+        {
+          toolName: "System",
+          type: "error",
+          message: "Failed to list tools.",
+        },
       ]);
       setIsReviewing(false);
       setIsLoadingTools(false);
       return;
     } finally {
       setIsLoadingTools(false);
+    }
+
+    try {
+      await listResources();
+    } catch (error) {
+      console.error("Error listing resources:", error);
+    }
+
+    try {
+      await listPrompts();
+    } catch (error) {
+      console.error("Error listing prompts:", error);
     }
 
     if (!fetchedTools || fetchedTools.length === 0) {
@@ -274,24 +301,56 @@ Examples could be:
   return (
     <TabsContent value="analysis">
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-card rounded-lg shadow col-span-1">
+        <div className="bg-card rounded-lg shadow col-span-1 flex flex-col">
           <div className="p-4 border-b border-gray-200 dark:border-gray-800">
             <h3 className="font-semibold">Tools, Resources, and Prompts</h3>
           </div>
-          <div className="space-y-2 overflow-y-auto max-h-96">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-              <h3 className="font-semibold">Tools: {tools.length}</h3>
-            </div>
-            {tools.map((tool, index) => (
-              <div
-                key={index}
-                className="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-              >
-                <div className="flex flex-col items-start">
-                  <span className="flex-1">{tool.name}</span>
-                </div>
+          <div className="overflow-y-auto max-h-96">
+            <div className="space-y-2">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+                <h3 className="font-semibold">Tools: {tools.length}</h3>
               </div>
-            ))}
+              {tools.map((tool, index) => (
+                <div
+                  key={index}
+                  className="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="flex-1">{tool.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+                <h3 className="font-semibold">Resources: {resources.length}</h3>
+              </div>
+              {resources.map((resource, index) => (
+                <div
+                  key={index}
+                  className="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="flex-1">{resource.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+                <h3 className="font-semibold">Prompts: {prompts.length}</h3>
+              </div>
+              {prompts.map((prompt, index) => (
+                <div
+                  key={index}
+                  className="flex items-center p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="flex-1">{prompt.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         <div className="bg-card rounded-lg shadow col-span-2">

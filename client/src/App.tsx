@@ -383,8 +383,10 @@ const App = () => {
       ListResourcesResultSchema,
       "resources",
     );
-    setResources(resources.concat(response.resources ?? []));
+    const fetchedResources = response.resources ?? [];
+    setResources(resources.concat(fetchedResources));
     setNextResourceCursor(response.nextCursor);
+    return fetchedResources;
   };
 
   const listResourceTemplates = async () => {
@@ -398,10 +400,10 @@ const App = () => {
       ListResourceTemplatesResultSchema,
       "resources",
     );
-    setResourceTemplates(
-      resourceTemplates.concat(response.resourceTemplates ?? []),
-    );
+    const fetchedResourceTemplates = response.resourceTemplates ?? [];
+    setResourceTemplates(resourceTemplates.concat(fetchedResourceTemplates));
     setNextResourceTemplateCursor(response.nextCursor);
+    return fetchedResourceTemplates;
   };
 
   const readResource = async (uri: string) => {
@@ -457,8 +459,10 @@ const App = () => {
       ListPromptsResultSchema,
       "prompts",
     );
-    setPrompts(response.prompts);
+    const fetchedPrompts = response.prompts || [];
+    setPrompts(fetchedPrompts);
     setNextPromptCursor(response.nextCursor);
+    return fetchedPrompts;
   };
 
   const getPrompt = async (name: string, args: Record<string, string> = {}) => {
@@ -731,6 +735,16 @@ const App = () => {
                         listTools={async () => {
                           clearError("tools");
                           return await listTools();
+                        }}
+                        prompts={prompts}
+                        listPrompts={async () => {
+                          clearError("prompts");
+                          return await listPrompts();
+                        }}
+                        resources={resources}
+                        listResources={async () => {
+                          clearError("resources");
+                          return await listResources();
                         }}
                       />
                       <LLMTab

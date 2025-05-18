@@ -73,7 +73,7 @@ const HistoryAndNotifications = ({
                       {request.response && (
                         <div className="mt-2">
                           <div className="flex justify-between items-center mb-1">
-                            <span className="font-semibold text-green-600">
+                            <span className="font-semibold text-[#00AD8A]">
                               Response:
                             </span>
                           </div>

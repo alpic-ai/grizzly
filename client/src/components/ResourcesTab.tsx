@@ -130,7 +130,7 @@ const ResourcesTab = ({
           renderItem={(resource) => (
             <div className="flex items-center w-full">
               <FileText className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
-              <span className="flex-1 truncate" title={resource.uri.toString()}>
+              <span className="flex-1 truncate text-sm" title={resource.uri.toString()}>
                 {resource.name}
               </span>
               <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-400" />
@@ -160,7 +160,7 @@ const ResourcesTab = ({
           renderItem={(template) => (
             <div className="flex items-center w-full">
               <FileText className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
-              <span className="flex-1 truncate" title={template.uriTemplate}>
+              <span className="flex-1 truncate text-sm" title={template.uriTemplate}>
                 {template.name}
               </span>
               <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-400" />
@@ -222,7 +222,7 @@ const ResourcesTab = ({
           </div>
           <div className="p-4">
             {error ? (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="bg-red-50">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
@@ -267,12 +267,9 @@ const ResourcesTab = ({
                 </Button>
               </div>
             ) : (
-              <Alert>
-                <AlertDescription>
-                  Select a resource or template from the list to view its
-                  contents
-                </AlertDescription>
-              </Alert>
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                Select a resource or template from the list to view its contents.
+              </p>
             )}
           </div>
         </div>

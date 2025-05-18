@@ -1,6 +1,6 @@
 {
   "name": "@alpic-ai/grizzly",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Grizzly",
   "license": "MIT",
   "author": "Anthropic, PBC (https://anthropic.com)",
@@ -40,9 +40,9 @@
     "publish-all": "npm publish --workspaces --access public && npm publish --access public"
   },
   "dependencies": {
-    "@alpic-ai/grizzly-cli": "^0.2.0",
-    "@alpic-ai/grizzly-client": "^0.2.0",
-    "@alpic-ai/grizzly-server": "^0.2.0",
+    "@alpic-ai/grizzly-cli": "^0.3.0",
+    "@alpic-ai/grizzly-client": "^0.3.0",
+    "@alpic-ai/grizzly-server": "^0.3.0",
     "@modelcontextprotocol/sdk": "^1.11.2",
     "concurrently": "^9.0.1",
     "open": "^10.1.0",

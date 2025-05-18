@@ -261,22 +261,7 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
-                  disabled={!isModelConfigured || isLoading}
-                  className="flex-1"
-                />
-                <Button type="submit" disabled={!isModelConfigured || isLoading}>
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </form>
-          )}
+          </form>
 
           {error && (
             <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
@@ -346,6 +331,15 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
                           >
                             {displayValueNode as React.ReactNode}
                           </div>
+                          {/* Display argument description if available
+                          {schema &&
+                            typeof schema === "object" &&
+                            "description" in schema && // Reverted to 'in' operator for type guarding
+                            typeof schema.description === "string" && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {schema.description}
+                              </p>
+                            )} */}
                         </div>
                       );
                     })}
@@ -371,6 +365,44 @@ const LLMTab = ({ tools, chatToolCall, chatToolResult }: LLMTabProps) => {
               </div>
             </div>
           )}
+
+          <div className="border rounded-lg overflow-hidden">
+            <ScrollArea className="max-h-[400px] p-4 overflow-y-auto">
+              <div className="space-y-4">
+                {messages
+                  .filter((msg) => !msg.isToolResult)
+                  .map((message, i) => (
+                    <div
+                      key={i}
+                      className={`flex items-start gap-3 ${
+                        message.role === "user" ? "justify-end" : ""
+                      }`}
+                    >
+                      {message.role === "assistant" && (
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Bot className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[80%] rounded-lg p-3 ${
+                          message.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        } whitespace-pre-wrap break-words`}
+                      >
+                        {message.content}
+                      </div>
+                      {message.role === "user" && (
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                          <User className="w-4 h-4 text-primary-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          </div>
         </Card>
       </div>
     </TabsContent>

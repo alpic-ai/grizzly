@@ -2,7 +2,7 @@
 
 The Inspector Grizzly is based on the MCP Inspector by anthropic!
 
-![Discord](https://img.shields.io/discord/1370323135861358713?style=social&logo=discord&label=Discord&link=https%3A%2F%2Fdiscord.gg%2FgsSJRBBZke)
+[![Discord](https://img.shields.io/discord/1370323135861358713?color=7289DA&label=Discord&logo=discord&logoColor=white)](https://discord.gg/gsSJRBBZke)
 
 
 ![MCP Inspector Grizzly Screenshot](./grizzly.png)

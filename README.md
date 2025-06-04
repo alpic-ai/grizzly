@@ -24,10 +24,20 @@ Grizzly packages a bunch of additional features :
 
 ### From an MCP server repository
 
-To inspect an MCP server implementation, there's no need to clone this repo. Instead, use `npx`. For example, if your server is built at `build/index.js`:
+To inspect an MCP server implementation, there's no need to clone this repo. Instead, use `npx`. 
+
+#### Example 1 - MCP server built with JavaScript/TypeScript/Node.js
+If your server is built at `build/index.js`:
 
 ```bash
 npx @alpic-ai/grizzly node build/index.js
+```
+
+#### Example 2 - MCP server built with Python
+If your server is built at `./main.py`:
+
+```bash
+npx @alpic-ai/grizzly uv run main.py
 ```
 
 You can pass both arguments and environment variables to your MCP server. Arguments are passed directly to your server, while environment variables can be set using the `-e` flag:
